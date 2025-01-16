@@ -23,17 +23,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y calibre
 
-      - name: Download Latest Recipe
-        run: wget -O "NY Times.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
+      - name: Download NY Times Recipe
+        run: wget -O "nytimes.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
 
       - name: Fetch and Convert NY Times
         run: |
           TODAY=$(date '+%Y-%m-%d')
-          ebook-convert "NY Times.recipe" "./nyt-${TODAY}.epub"
+          ebook-convert "nytimes.recipe" "./nyt-${TODAY}.epub"
           echo "Generated nyt-${TODAY}.epub"
 
-      - name: Upload EPUB with Date
+      - name: Upload EPUB with Date-Stamped Artifact
+        run: |
+          TODAY=$(date '+%Y-%m-%d')
+          echo "artifact-name=nyt-${TODAY}" >> $GITHUB_ENV
         uses: actions/upload-artifact@v4
         with:
-          name: NYT-EPUB
+          name: ${{ env.artifact-name }}
           path: ./nyt-*.epub
