@@ -18,7 +18,7 @@ jobs:
           echo "Fetched and converted NYT to EPUB"
 
       - name: Upload to Release
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: NYT.epub
           path: ./nyt.epub
