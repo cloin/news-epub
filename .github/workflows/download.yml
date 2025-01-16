@@ -2,23 +2,24 @@ name: Fetch NYT EPUB
 
 on:
   schedule:
-    - cron: "0 6 * * *" # Runs daily at 6 AM
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 jobs:
   fetch-news:
     runs-on: ubuntu-latest
     steps:
+      - name: Download Latest Recipe
+        run: wget -O "NY Times.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
+
       - name: Set up Calibre
         run: sudo apt-get update && sudo apt-get install -y calibre
 
       - name: Fetch and Convert NY Times
-        run: |
-          ebook-convert "NY Times.recipe" ./nyt.epub
-          echo "Fetched and converted NYT to EPUB"
+        run: ebook-convert "NY Times.recipe" ./nyt.epub
 
-      - name: Upload to Release
+      - name: Upload EPUB as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NYT.epub
+          name: NYT-latest
           path: ./nyt.epub
