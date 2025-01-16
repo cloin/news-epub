@@ -2,24 +2,38 @@ name: Fetch NYT EPUB
 
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: "0 6 * * *" # Runs daily at 6 AM
   workflow_dispatch:
 
 jobs:
   fetch-news:
     runs-on: ubuntu-latest
     steps:
-      - name: Download Latest Recipe
-        run: wget -O "NY Times.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
+      - name: Cache Calibre installation
+        uses: actions/cache@v4
+        with:
+          path: /usr/share/calibre
+          key: calibre-${{ runner.os }}
+          restore-keys: |
+            calibre-
 
-      - name: Set up Calibre
-        run: sudo apt-get update && sudo apt-get install -y calibre
+      - name: Install Calibre
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y calibre
+
+      - name: Download Latest Recipe
+        run: wget -O "NY Times.recipe" "https://github.com/kovidgoyal/calibre/raw/master/recipes/nyt.recipe"
 
       - name: Fetch and Convert NY Times
-        run: ebook-convert "NY Times.recipe" ./nyt.epub
+        run: |
+          TODAY=$(date '+%Y-%m-%d')
+          ebook-convert "NY Times.recipe" "./nyt-${TODAY}.epub"
+          echo "Generated nyt-${TODAY}.epub"
 
-      - name: Upload EPUB as Artifact
+      - name: Upload EPUB with Date
         uses: actions/upload-artifact@v4
         with:
-          name: NYT-latest
-          path: ./nyt.epub
+          name: NYT-EPUB
+          path: ./nyt-*.epub
