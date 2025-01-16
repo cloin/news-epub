@@ -31,11 +31,9 @@ jobs:
           TODAY=$(date '+%Y-%m-%d')
           ebook-convert "nytimes.recipe" "./nyt-${TODAY}.epub"
           echo "Generated nyt-${TODAY}.epub"
+          echo "artifact-name=nyt-${TODAY}" >> $GITHUB_ENV
 
       - name: Upload EPUB with Date-Stamped Artifact
-        run: |
-          TODAY=$(date '+%Y-%m-%d')
-          echo "artifact-name=nyt-${TODAY}" >> $GITHUB_ENV
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.artifact-name }}
