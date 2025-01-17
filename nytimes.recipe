@@ -6,8 +6,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import datetime
 import json
-import os
-import subprocess
 import re
 from pprint import pprint  # noqa
 
@@ -181,26 +179,9 @@ class NewYorkTimes(BasicNewsRecipe):
 
     def read_nyt_metadata(self):
         soup = self.read_todays_paper()
-        pdate = soup.find('meta', attrs={'name': 'pdate', 'content': True})['content']
+        pdate = soup.find('meta', attrs={'name':'pdate', 'content': True})['content']
         date = strptime(pdate, '%Y%m%d', assume_utc=False, as_utc=False)
-        
-        # Generate the URL for the PDF
-        pdf_url = 'https://static01.nyt.com/images/{}/nytfrontpage/scan.pdf'.format(date.strftime('%Y/%m/%d'))
-        self.log("Fetching NYT front page PDF: {}".format(pdf_url))
-        
-        # Define paths for the PDF and PNG
-        pdf_path = '/tmp/nytfrontpage.pdf'
-        png_path = '/tmp/nytfrontpage.png'
-        
-        # Download the PDF
-        subprocess.run(['curl', '-o', pdf_path, pdf_url], check=True)
-        
-        # Convert the first page of the PDF to PNG
-        subprocess.run(['pdftoppm', '-f', '1', '-l', '1', '-r', '300', pdf_path, '/tmp/nytfrontpage', '-png'], check=True)
-        
-        # Set the cover to the generated PNG
-        self.cover_url = png_path
-        
+        self.cover_url = 'https://static01.nyt.com/images/{}/nytfrontpage/scan.jpg'.format(date.strftime('%Y/%m/%d'))
         self.timefmt = strftime(' [%d %b, %Y]', date)
         return soup
 
