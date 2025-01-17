@@ -1,0 +1,20 @@
+{
+    "name": "NYT EPUB Dev Environment",
+    "build": {
+      "dockerfile": "Dockerfile"
+    },
+    // "postCreateCommand": "sudo apt-get install -y calibre",
+    "customizations": {
+      "vscode": {
+        "settings": {
+          "terminal.integrated.defaultProfile.linux": "bash"
+        },
+        "extensions": [
+          "ms-python.python",
+          "ms-azuretools.vscode-docker"
+        ]
+      }
+    },
+    "forwardPorts": [],
+    // "remoteUser": "vscode"
+  }
