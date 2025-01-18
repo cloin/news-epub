@@ -23,13 +23,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y calibre
 
-      - name: Download NY Times Recipe
-        run: wget -O "nytimes.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
+      # - name: Download NY Times Recipe
+      #   run: wget -O "nytimes.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
 
       - name: Fetch and Convert NY Times
         run: |
           TODAY=$(date '+%Y-%m-%d')
-          ebook-convert "nytimes.recipe" "./nyt-${TODAY}.epub"
+          ebook-convert "./nytimes.recipe" "./nyt-${TODAY}.epub"
           echo "Generated nyt-${TODAY}.epub"
           echo "EPUB_NAME=nyt-${TODAY}" >> $GITHUB_ENV
 
