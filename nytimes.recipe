@@ -13,6 +13,8 @@ from calibre import strftime
 from calibre.ebooks.BeautifulSoup import Tag
 from calibre.utils.date import strptime
 from calibre.web.feeds.news import BasicNewsRecipe
+from calibre.ebooks.conversion.plumber import convert
+from calibre.ebooks.metadata import MetaInformation
 
 use_wayback_machine = False
 
@@ -176,12 +178,27 @@ class NewYorkTimes(BasicNewsRecipe):
         if d and isinstance(d, str):
             INDEX = 'https://www.nytimes.com/issue/todayspaper/' + d + '/todays-new-york-times'
         return self.index_to_soup(self.get_nyt_page(INDEX, skip_wayback=True))
+    
+    def convert_pdf_to_cover(self, pdf_url):
+        try:
+            pdf_data = self.index_to_soup(pdf_url, raw=True)
+            with open('cover.pdf', 'wb') as pdf_file:
+                pdf_file.write(pdf_data)
+            convert('cover.pdf', 'cover.jpg', MetaInformation('Cover', ''), input_format='pdf', output_format='jpeg')
+            return 'cover.jpg'
+        except Exception as e:
+            self.log(f"Failed to convert PDF to cover image: {e}")
+            return None
 
     def read_nyt_metadata(self):
         soup = self.read_todays_paper()
-        pdate = soup.find('meta', attrs={'name':'pdate', 'content': True})['content']
+        pdate = soup.find('meta', attrs={'name': 'pdate', 'content': True})['content']
         date = strptime(pdate, '%Y%m%d', assume_utc=False, as_utc=False)
-        self.cover_url = 'https://static01.nyt.com/images/{}/nytfrontpage/scan.jpg'.format(date.strftime('%Y/%m/%d'))
+
+        pdf_url = 'https://static01.nyt.com/images/{}/nytfrontpage/scan.pdf'.format(date.strftime('%Y/%m/%d'))
+        self.cover_url = self.convert_pdf_to_cover(pdf_url) or \
+                         'https://static01.nyt.com/images/{}/nytfrontpage/scan.jpg'.format(date.strftime('%Y/%m/%d'))
+
         self.timefmt = strftime(' [%d %b, %Y]', date)
         return soup
 
