@@ -29,7 +29,7 @@ jobs:
       - name: Fetch and Convert NY Times
         run: |
           TODAY=$(date '+%Y-%m-%d')
-          ebook-convert "nytimes.recipe" "./nyt-${TODAY}.epub"
+          ebook-convert "nytimes.recipe" "./nyt-${TODAY}.epub" --options "res=superJumbo"
           echo "Generated nyt-${TODAY}.epub"
           echo "EPUB_NAME=nyt-${TODAY}" >> $GITHUB_ENV
 
