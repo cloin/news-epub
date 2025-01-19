@@ -9,6 +9,11 @@ jobs:
   fetch-news:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Ensure we have full history for commits
+
       - name: Cache Calibre installation
         uses: actions/cache@v4
         with:
@@ -21,7 +26,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y calibre imagemagick wget
+          sudo apt-get install -y calibre imagemagick wget git
 
       - name: Set Time Zone and Debug Date
         run: |
@@ -50,10 +55,12 @@ jobs:
           TODAY=$(date '+%Y-%m-%d')
           ebook-convert "./nytimes.recipe" "./nyt-${TODAY}.epub" --cover="cover.jpg"
           echo "Generated nyt-${TODAY}.epub"
-          echo "EPUB_NAME=nyt-${TODAY}" >> $GITHUB_ENV
+          mv "./nyt-${TODAY}.epub" "./epubs/nyt/nyt-${TODAY}.epub"
 
-      - name: Upload EPUB with Date-Stamped Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.EPUB_NAME }}
-          path: ./nyt-*.epub
+      - name: Commit and Push EPUB to Repository
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add ./epubs/nyt/nyt-${TODAY}.epub
+          git commit -m "Add NYT EPUB for ${TODAY}"
+          git push
