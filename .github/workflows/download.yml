@@ -2,7 +2,7 @@ name: Fetch NYT EPUB
 
 on:
   schedule:
-    - cron: "0 6 * * *" # Runs daily at 6 AM
+    - cron: "0 6 * * *" # Runs daily at 6 AM UTC
   workflow_dispatch:
 
 jobs:
@@ -23,13 +23,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y calibre imagemagick wget
 
+      - name: Set Time Zone and Debug Date
+        run: |
+          export TZ="America/New_York"
+          echo "Time zone set to $(date)"
+
       - name: Download NY Times Recipe
         run: |
           wget -O "nytimes.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
 
       - name: Download High-Resolution Front Page PDF
         run: |
+          export TZ="America/New_York"
           TODAY=$(date '+%Y/%m/%d')
+          echo "Using date: $TODAY"
           wget -O "scan.pdf" "https://static01.nyt.com/images/${TODAY}/nytfrontpage/scan.pdf"
 
       - name: Convert PDF to High-Resolution JPG
@@ -39,6 +46,7 @@ jobs:
 
       - name: Fetch and Convert NY Times to EPUB
         run: |
+          export TZ="America/New_York"
           TODAY=$(date '+%Y-%m-%d')
           ebook-convert "./nytimes.recipe" "./nyt-${TODAY}.epub" --cover="cover.jpg"
           echo "Generated nyt-${TODAY}.epub"
