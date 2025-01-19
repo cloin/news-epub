@@ -17,19 +17,30 @@ jobs:
           restore-keys: |
             calibre-
 
-      - name: Install Calibre
+      - name: Install Required Packages
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y calibre
+          sudo apt-get install -y calibre imagemagick wget
 
-      # - name: Download NY Times Recipe
-      #   run: wget -O "nytimes.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
+      - name: Download NY Times Recipe
+        run: |
+          wget -O "nytimes.recipe" "https://raw.githubusercontent.com/kovidgoyal/calibre/refs/heads/master/recipes/nytimes.recipe"
 
-      - name: Fetch and Convert NY Times
+      - name: Download High-Resolution Front Page PDF
+        run: |
+          TODAY=$(date '+%Y/%m/%d')
+          wget -O "scan.pdf" "https://static01.nyt.com/images/${TODAY}/nytfrontpage/scan.pdf"
+
+      - name: Convert PDF to High-Resolution JPG
+        run: |
+          # Convert the first page of the PDF to a high-quality JPG
+          convert -density 300 "scan.pdf[0]" -quality 85 "cover.jpg"
+
+      - name: Fetch and Convert NY Times to EPUB
         run: |
           TODAY=$(date '+%Y-%m-%d')
-          ebook-convert "./nytimes.recipe" "./nyt-${TODAY}.epub"
+          ebook-convert "./nytimes.recipe" "./nyt-${TODAY}.epub" --cover="cover.jpg"
           echo "Generated nyt-${TODAY}.epub"
           echo "EPUB_NAME=nyt-${TODAY}" >> $GITHUB_ENV
 
