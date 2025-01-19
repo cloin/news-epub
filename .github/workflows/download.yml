@@ -12,7 +12,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Ensure we have full history for commits
+          fetch-depth: 0
 
       - name: Cache Calibre installation
         uses: actions/cache@v4
@@ -28,10 +28,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y calibre imagemagick wget git
 
-      - name: Set Time Zone and Debug Date
+      - name: Set Date for File Naming
+        id: date
         run: |
           export TZ="America/New_York"
-          echo "Time zone set to $(date)"
+          echo "DATE=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Download NY Times Recipe
         run: |
@@ -51,16 +52,17 @@ jobs:
 
       - name: Fetch and Convert NY Times to EPUB
         run: |
-          export TZ="America/New_York"
-          TODAY=$(date '+%Y-%m-%d')
+          TODAY=${{ env.DATE }}
           ebook-convert "./nytimes.recipe" "./nyt-${TODAY}.epub" --cover="cover.jpg"
           echo "Generated nyt-${TODAY}.epub"
+          mkdir -p ./epubs/nyt
           mv "./nyt-${TODAY}.epub" "./epubs/nyt/nyt-${TODAY}.epub"
 
       - name: Commit and Push EPUB to Repository
         run: |
+          TODAY=${{ env.DATE }}
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add ./epubs/nyt/nyt-${TODAY}.epub
+          git add "./epubs/nyt/nyt-${TODAY}.epub"
           git commit -m "Add NYT EPUB for ${TODAY}"
           git push
