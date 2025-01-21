@@ -60,11 +60,16 @@ jobs:
           mkdir -p ./epubs/nyt
           mv "./nyt-${TODAY}.epub" "./epubs/nyt/nyt-${TODAY}.epub"
 
-      - name: Commit and Push EPUB to Repository
+      - name: Clean Up Old EPUBs
+        run: |
+          find ./epubs/nyt/ -type f -name "nyt-*.epub" -mtime +5 -exec rm -f {} \;
+          echo "Removed EPUB files older than 5 days."
+
+      - name: Commit and Push EPUBs to Repository
         run: |
           TODAY=${{ env.DATE }}
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add "./epubs/nyt/nyt-${TODAY}.epub"
-          git commit -m "Add NYT EPUB for ${TODAY}"
+          git add ./epubs/nyt/
+          git commit -m "Add NYT EPUB for ${TODAY} and clean up old files"
           git push
