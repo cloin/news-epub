@@ -65,6 +65,13 @@ jobs:
           find ./epubs/nyt/ -type f -name "nyt-*.epub" -mtime +5 -exec rm -f {} \;
           echo "Removed EPUB files older than 5 days."
 
+      - name: Debug Git Status After Cleanup
+        run: |
+          echo "Git status after file cleanup:"
+          git status
+          echo "Files in ./epubs/nyt/:"
+          ls -l ./epubs/nyt/
+
       - name: Commit and Push EPUBs to Repository
         run: |
           TODAY=${{ env.DATE }}
