@@ -62,15 +62,26 @@ jobs:
 
       - name: Clean Up Old EPUBs
         run: |
-          find ./epubs/nyt/ -type f -name "nyt-*.epub" -mtime +5 -exec rm -f {} \;
-          echo "Removed EPUB files older than 5 days."
-
-      - name: Debug Git Status After Cleanup
-        run: |
-          echo "Git status after file cleanup:"
-          git status
-          echo "Files in ./epubs/nyt/:"
-          ls -l ./epubs/nyt/
+          # Get the current date and calculate the cutoff date (5 days ago)
+          TODAY=$(date '+%Y-%m-%d')
+          CUTOFF_DATE=$(date -d "$TODAY - 5 days" '+%Y-%m-%d')
+          
+          echo "Today's date: $TODAY"
+          echo "Cutoff date: $CUTOFF_DATE"
+          
+          # Find and delete files based on their filename dates
+          for file in ./epubs/nyt/nyt-*.epub; do
+            # Extract the date part from the filename (format: nyt-YYYY-MM-DD.epub)
+            FILE_DATE=$(basename "$file" | sed -E 's/nyt-([0-9]{4}-[0-9]{2}-[0-9]{2}).epub/\1/')
+            
+            # Compare the file date with the cutoff date
+            if [[ "$FILE_DATE" < "$CUTOFF_DATE" ]]; then
+              echo "Deleting old file: $file (Date: $FILE_DATE)"
+              rm -f "$file"
+            else
+              echo "Keeping file: $file (Date: $FILE_DATE)"
+            fi
+          done
 
       - name: Commit and Push EPUBs to Repository
         run: |
@@ -78,5 +89,5 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add --all ./epubs/nyt/
-          git commit -m "Add NYT EPUB for ${TODAY} and clean up old files"
+          git commit -m "Add NYT EPUB for ${TODAY} and clean up old files" || echo "No changes to commit"
           git push
