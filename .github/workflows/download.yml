@@ -70,6 +70,6 @@ jobs:
           TODAY=${{ env.DATE }}
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add ./epubs/nyt/
+          git add --all ./epubs/nyt/
           git commit -m "Add NYT EPUB for ${TODAY} and clean up old files"
           git push
